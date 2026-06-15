@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 // env file
 require('dotenv').config();
 
-const register = async (req, res) => {
+const register = async (req, res) => { 
     try {
         const { username, password, role } = req.body;
         console.log("Incoming request body:", req.body);
@@ -54,7 +54,15 @@ const login = async (req, res) => {
         }
 
         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        return res.status(200).json({ message: 'Login successful', token });
+
+        res.cookie('auth_token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', // Set secure flag in production
+            sameSite: 'Strict', 
+            maxAge: 3600000 // 1 hour 
+        });
+
+        return res.status(200).json({ message: 'Login successful', token, user: user.username, role: user.role });
 
     } catch (error) {
         console.error(error);
@@ -62,7 +70,14 @@ const login = async (req, res) => {
     }
 };
 
+const logout = async(req, res) => {
+    res.clearCookie('auth_token', { httpOnly: true, sameSite: 'strict' });
+    return res.status(200).json({ message: 'Logout successful' });
+};
+
+
 module.exports = { 
     register,
-    login
+    login,
+    logout
 };

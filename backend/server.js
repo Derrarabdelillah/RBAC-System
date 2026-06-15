@@ -5,6 +5,8 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
+const helmet = require("helmet");
+const cookieParser = require('cookie-parser');
 
 const uri = 'mongodb+srv://abdou:G3HNYJwv0vXjJtG6@cluster0.ghsi5dc.mongodb.net/RBAC?appName=Cluster0'
 
@@ -18,8 +20,13 @@ async function connectToDb() {
 }
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:5173', // FrontEnd URL
+    credentials: true
+}));
 app.use(express.json());
+app.use(helmet());
+app.use(cookieParser());
 
 // DB Connection
 connectToDb();
